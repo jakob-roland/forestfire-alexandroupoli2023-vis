@@ -1,0 +1,258 @@
+/* #region CONTAINERS */
+
+html, body {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: sans-serif;
+  color: rgb(43, 43, 43);
+}
+
+
+#panel-left {
+  position: absolute;
+  z-index: 5;
+  background-color: #798daa;
+  opacity: 1; /* reduce maybe */
+  top: 0;
+  padding: 25px;
+  padding-top: 15px;
+
+  width: 400px;
+}
+
+#panel-left:hover {
+  opacity: 1; /* reduce maybe */
+}
+
+
+.grid_main {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 20px;
+}
+
+.grid_main::after {
+  content: "";
+  position: absolute;
+  height: 100%;
+
+  left: 50%; /* Places the line at the horizontal center */
+  width: 2px;
+  background-color: rgb(0, 0, 0);
+  transform: translateX(-50%); /* Centers the 2px width perfectly */
+}
+
+.grid_3{
+  margin: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  
+}
+
+.grid_2{
+  margin: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+/* #endregion */
+
+/* #region TEXT */
+h2 {
+  margin: 0px;
+}
+
+p {
+  margin: 5px 0px;
+}
+.heading {
+  margin: 10px 0px;
+  font-weight: bold;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+a {
+  color: rgb(0, 201, 201);
+}
+
+.icon {
+  height: 25px;
+  transform: translateY(25%);
+}
+
+/* #endregion */
+
+/* #region RADIO BUTTONS OR CHECK BOX WITH IMAGE */
+.radio_img {
+  height: 40px;
+  padding: 3px;
+  border: 2px solid rgba(0, 201, 201, 0);
+  border-radius: 15%;
+  cursor: pointer;
+}
+
+/* IF CHECKED */
+.radioButton_img:checked + img {
+  border-color: rgb(0, 201, 201);
+}
+
+/* HIDE RADIO BUTTONS */
+.radioButton_img { 
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkBox_img { 
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkBox_img:checked + img {
+  border-color: rgb(255, 230, 0);
+}
+
+/* CENTERS ICONS */
+.radioButton_img_container {
+  margin: auto;
+  text-align: center;
+}
+/* #endregion */
+
+/* #region NORMAL RADIO BUTTONS */
+.radio_group {
+    position: relative;
+    display: inline; /* Keeps it in line with other radios */
+    width: fit-content;
+}
+
+.info_box {
+    position: absolute;
+    bottom: 100%;      /* Places it above the label */
+    left: 65%;
+    transform: translateX(-50%); /* Centers it horizontally */
+    width: 120px;
+
+    /* Styling for the box */
+    background: #333;
+    color: white;
+    padding: 10px;
+
+    border-radius: 4px;
+    font-size: 12px;
+    text-align: justify;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out; /* Smooth fade effect */
+    pointer-events: auto;
+}
+
+.radio_group .underline:hover ~ .info_box,
+.radio_group .underline:hover .info_box,
+.radio_group .info_box:hover {
+    opacity: 1;
+    visibility: visible;
+}
+/* #endregion */
+
+/* #region COMPARISON CANVAS */
+#comparison-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  user-select: none; 
+}
+
+.comparison_image {
+  width: 100vw;   
+  height: 100vh;  
+  object-fit: cover; 
+  display: block;
+
+  -webkit-user-drag: none;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  pointer-events: none;
+}
+
+#image2 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+}
+
+#wrapper_image1 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  width: 50%;     
+  height: 100%;
+  overflow: hidden; 
+}
+/* #endregion */
+
+/* #region COMPARISON HANDLE */
+/* The Vertical Line */
+#handle {
+    position: absolute;
+    top: 0;
+    left: 50%; /* Matches wrapper width */
+    height: 100%;
+    width: 3px;
+    background: #666666cb;
+    z-index: 10;
+    transform: translateX(-50%);
+}
+
+/* The Circle centered on the line */
+#handle::after {
+    content: "";
+    position: absolute;
+    top: 78%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 12px;
+    background: rgb(207, 207, 207);
+    border: 2px solid #666;
+    border-radius: 30%;
+}
+
+/* CSS Border Triangles for Arrows */
+.arrow-left, .arrow-right {
+    position: absolute;
+    top: 78%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    z-index: 11;
+}
+
+.arrow-left {
+    left: -6px;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-right: 6px solid #666;
+}
+
+.arrow-right {
+    right: -6px;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 6px solid #666;
+}
+/* #endregion */

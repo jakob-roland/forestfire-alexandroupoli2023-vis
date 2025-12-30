@@ -1,0 +1,109 @@
+const image1 = document.getElementById("image1");
+const image2 = document.getElementById("image2");
+const handle = document.getElementById("handle");
+
+function updateImages() {
+  let time_left = document.querySelector('input[name="radio_time_left"]:checked')?.value;
+  let time_right = document.querySelector('input[name="radio_time_right"]:checked')?.value;
+  let base_left = document.querySelector('input[name="radio_base_left"]:checked')?.value;
+  let base_right = document.querySelector('input[name="radio_base_right"]:checked')?.value;
+  let img_mode = document.querySelector('input[name="img_mode"]:checked')?.value;
+
+  if (base_left == 'OSM') {
+    image1.src = `data/osm.png`;
+  } else {
+    image1.src = `data/${time_left}_${img_mode}.png`;
+  };
+
+  if (base_right == 'OSM') {
+    image2.src = `data/osm.png`;
+  } else {
+    image2.src = `data/${time_right}_${img_mode}.png`;
+  };
+
+  if (image1.src == image2.src) {
+    handle.style.opacity = 0;
+  } else {
+    handle.style.opacity = 1;
+  }
+  console.log(image2.src)
+};
+
+document.addEventListener('DOMContentLoaded', () => {updateImages();
+});
+
+// #region COMPARISON HANDLE
+const wrapper = document.getElementById('wrapper_image1');
+const container = document.getElementById('comparison-container');
+
+let isDragging = false;
+
+// 1. When the user clicks down, start dragging
+container.addEventListener('mousedown', () => {
+  if (image1.src != image2.src) {
+    isDragging = true;
+  }
+});
+
+// 2. When the user releases the click, stop dragging
+window.addEventListener('mouseup', () => {
+  isDragging = false;
+});
+
+// 3. Track the mouse movement
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) {
+    container.style.cursor = 'auto';
+    return;
+  };
+
+  // Get the bounding box of the container to handle offsets
+  const rect = container.getBoundingClientRect();
+  
+  // Calculate the horizontal position of the mouse relative to the container
+  let x = e.clientX - rect.left;
+
+  // Constrain the 'x' value so the border doesn't go off-screen
+  if (x < 0) x = 0;
+  if (x > rect.width) x = rect.width;
+
+  // Calculate the percentage
+  const percentage = (x / rect.width) * 100;
+
+  // Update the CSS width of the wrapper
+  wrapper.style.width = `${percentage}%`;
+  handle.style.left = `${percentage}%`;
+  container.style.cursor = 'col-resize';
+});
+// #endregion
+
+// #region RADIO BUTTONS EVENT LISTENERS
+
+// Time Radio Buttons
+const radio_time_left = document.querySelectorAll('input[name="radio_time_left"]');
+radio_time_left.forEach(radio => {
+  radio.addEventListener('change', () => {updateImages()})
+});
+const radio_time_right = document.querySelectorAll('input[name="radio_time_right"]');
+radio_time_right.forEach(radio => {
+  radio.addEventListener('change', () => {updateImages()})
+});
+
+// Base Radio Buttons
+const radio_base_left = document.querySelectorAll('input[name="radio_base_left"]');
+radio_base_left.forEach(radio => {
+  radio.addEventListener('change', () => {updateImages()})
+});
+const radio_base_right = document.querySelectorAll('input[name="radio_base_right"]');
+radio_base_right.forEach(radio => {
+  radio.addEventListener('change', () => {updateImages()})
+});
+
+// Mode Radio Buttons
+const radio_Imagemode = document.querySelectorAll('input[name="img_mode"]');
+radio_Imagemode.forEach(radio => {
+  radio.addEventListener('change', () => {updateImages()})
+});
+
+
+// #endregion
