@@ -1,3 +1,3 @@
-# EU forestfire viewer
+# Forestfire near Alexandroupoli 2023
 
-An app to view past and present forestfires in Europe based on EFFIS data. Made by Bibiane Hayová and Jakob Roland at the University of Vienna.
+A visualization of the forestfire near Alexandroupoli, Greece, in August 2023 based on EFFIS data and satellite imagery. Made by Bibiane Hayová and Jakob Roland at the University of Vienna.
