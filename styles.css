@@ -68,6 +68,7 @@ h2 {
 p {
   margin: 5px 0px;
 }
+
 .heading {
   margin: 10px 0px;
   font-weight: bold;
@@ -84,6 +85,14 @@ a {
 .icon {
   height: 25px;
   transform: translateY(25%);
+}
+
+.impressum p {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  font-size:x-small;
+  margin: 0px;
+  color: rgb(80, 80, 80);
 }
 
 /* #endregion */
