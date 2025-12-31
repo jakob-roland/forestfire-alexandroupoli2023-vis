@@ -1,12 +1,15 @@
 const image1 = document.getElementById("image1");
 const image2 = document.getElementById("image2");
 const handle = document.getElementById("handle");
+const wrapper_left = document.getElementById('wrapper_left');
 
 function updateImages() {
   let time_left = document.querySelector('input[name="radio_time_left"]:checked')?.value;
   let time_right = document.querySelector('input[name="radio_time_right"]:checked')?.value;
+
   let base_left = document.querySelector('input[name="radio_base_left"]:checked')?.value;
   let base_right = document.querySelector('input[name="radio_base_right"]:checked')?.value;
+
   let img_mode = document.querySelector('input[name="img_mode"]:checked')?.value;
 
   if (base_left == 'OSM') {
@@ -21,26 +24,85 @@ function updateImages() {
     image2.src = `data/${time_right}_${img_mode}.png`;
   };
 
-  if (image1.src == image2.src) {
-    handle.style.opacity = 0;
-  } else {
-    handle.style.opacity = 1;
-  }
-  console.log(image2.src)
+  updateOverlay()
 };
 
-document.addEventListener('DOMContentLoaded', () => {updateImages();
-});
+function updateOverlay() {
+  let time_left = document.querySelector('input[name="radio_time_left"]:checked')?.value;
+  let time_right = document.querySelector('input[name="radio_time_right"]:checked')?.value;
+
+  let checkedBoxesLeft = document.querySelectorAll('input[name="overlay_data_left"]:checked');
+  let checkedBoxesRight = document.querySelectorAll('input[name="overlay_data_right"]:checked');
+  let valuesLeft = Array.from(checkedBoxesLeft).map(cb => cb.value);
+  let valuesRight = Array.from(checkedBoxesRight).map(cb => cb.value);
+
+  // remove old overlays
+  document.querySelectorAll('.overlay_image').forEach(el => el.remove());
+
+  if (time_left != "2023-08-03"){
+    for (let i = 0; i < valuesLeft.length; i++) {
+      if (valuesLeft[i] == 'active_fires' && time_left == "2023-09-12"){continue}
+      else {
+        let new_overlay = document.createElement("img");
+        new_overlay.src = `data/${time_left}_${valuesLeft[i]}.png`;
+        new_overlay.classList.add("comparison_image");
+        new_overlay.classList.add("overlay_image");
+        if (valuesLeft[i] == 'active_fires'){
+          new_overlay.style.zIndex = 1
+        }
+
+        let containerOverlay = document.getElementById(`wrapper_left`)
+        containerOverlay.append(new_overlay);
+    }}}
+
+  if (time_right != "2023-08-03"){
+    for (let i = 0; i < valuesRight.length; i++) {
+      if (valuesRight[i] == 'active_fires' && time_right == "2023-09-12"){continue}
+      else {
+        let new_overlay = document.createElement("img");
+        new_overlay.src = `data/${time_right}_${valuesRight[i]}.png`;
+        new_overlay.classList.add("comparison_image");
+        new_overlay.classList.add("overlay_image");
+        if (valuesRight[i] == 'active_fires'){
+          new_overlay.style.zIndex = 1
+        }
+
+        let containerOverlay = document.getElementById(`wrapper_right`)
+        containerOverlay.append(new_overlay);
+  }}}
+
+  if ((checkEqual())) {
+    handle.style.opacity = 0
+  } else {
+    handle.style.opacity = 1
+  }
+}
+
+// checks if the left and right canvas have the same image and overlay
+function checkEqual() {
+  let checkedBoxesLeft = document.querySelectorAll('input[name="overlay_data_left"]:checked');
+  let checkedBoxesRight = document.querySelectorAll('input[name="overlay_data_right"]:checked');
+  let valuesLeft = Array.from(checkedBoxesLeft).map(cb => cb.value);
+  let valuesRight = Array.from(checkedBoxesRight).map(cb => cb.value);
+
+  const isEqual = valuesLeft.length === valuesRight.length && 
+                  valuesLeft.every((val, index) => val === valuesRight[index]);
+
+  if (image1.src == image2.src && isEqual) {
+    return true
+  } else {return false}
+}
+
+document.addEventListener('DOMContentLoaded', () => {updateImages()});
 
 // #region COMPARISON HANDLE
-const wrapper = document.getElementById('wrapper_image1');
 const container = document.getElementById('comparison-container');
 
 let isDragging = false;
 
 // 1. When the user clicks down, start dragging
 container.addEventListener('mousedown', () => {
-  if (image1.src != image2.src) {
+  if (!checkEqual()) {
     isDragging = true;
   }
 });
@@ -71,7 +133,7 @@ window.addEventListener('mousemove', (e) => {
   const percentage = (x / rect.width) * 100;
 
   // Update the CSS width of the wrapper
-  wrapper.style.width = `${percentage}%`;
+  wrapper_left.style.width = `${percentage}%`;
   handle.style.left = `${percentage}%`;
   container.style.cursor = 'col-resize';
 });
@@ -106,4 +168,16 @@ radio_Imagemode.forEach(radio => {
 });
 
 
+// #endregion
+
+// #region OVERLAY IMAGES
+
+const checkboxes_overlayData_left = document.querySelectorAll('input[name="overlay_data_left"]');
+checkboxes_overlayData_left.forEach(checkbox => {
+  checkbox.addEventListener('change', () => {updateOverlay()})})
+
+const checkboxes_overlayData_right = document.querySelectorAll('input[name="overlay_data_right"]');
+checkboxes_overlayData_right.forEach(checkbox => {
+  checkbox.addEventListener('change', () => {updateOverlay()})})
+      
 // #endregion
