@@ -1,8 +1,17 @@
 const image1 = document.getElementById("image1");
 const image2 = document.getElementById("image2");
 const handle = document.getElementById("handle");
-const wrapper_left = document.getElementById('wrapper_left');
-const container = document.getElementById('comparison-container');
+const wrapper_left = document.getElementById("wrapper_left");
+const container = document.getElementById("comparison-container");
+const burnt_area = document.getElementById("burnt_area_text");
+
+const sizes_dict = {
+  'vienna': 34000,
+  'liechtenstein': 13000,
+  'neusiedlerSee': 14500,
+  'athen': 10500,
+  'scalebar': 30000
+}
 
 function updateImages() {
   let time_left = document.querySelector('input[name="radio_time_left"]:checked')?.value;
@@ -25,7 +34,19 @@ function updateImages() {
     image2.src = `data/${time_right}_${img_mode}.png`;
   };
 
+  // update burnt_area_text in sizeComparison
+  if (time_left == "2023-08-03" || time_right == "2023-08-03") {
+    burnt_area.innerHTML = "Verbrannte Fläche: 0 km²"
+  }
+  if (time_left == "2023-08-23" || time_right == "2023-08-23") {
+    burnt_area.innerHTML = "Verbrannte Fläche: 735,27 km²"
+  }
+  if (time_left == "2023-09-12" || time_right == "2023-09-12") {
+    burnt_area.innerHTML = "Verbrannte Fläche: 938,81 km²"
+  }
+
   updateOverlay()
+  /* image1.src = 'data/size_test.png' */ // for testing
 };
 
 function updateOverlay() {
@@ -65,7 +86,7 @@ function updateOverlay() {
         new_overlay.classList.add("comparison_image");
         new_overlay.classList.add("overlay_image");
         if (valuesRight[i] == 'active_fires'){
-          new_overlay.style.zIndex = 1
+          new_overlay.style.zIndex = 2;
         }
 
         let containerOverlay = document.getElementById(`wrapper_right`)
@@ -95,10 +116,61 @@ function checkEqual() {
   } else {return false}
 }
 
+// get map scale in 1 px : x meters. Based on the satellite images in full resolution (2500px : 168 861m)
+function getPixelScale() {
+    const realWorldMeters = 168861;
+    
+    // 1. Get dimensions
+    const containerWidth = image2.clientWidth;
+    const containerHeight = image2.clientHeight;
+    const naturalWidth = image2.naturalWidth;
+    const naturalHeight = image2.naturalHeight;
+
+    // 2. Calculate the zoom/scale factor used by 'object-fit: cover'
+    const scaleWidth = containerWidth / naturalWidth;
+    const scaleHeight = containerHeight / naturalHeight;
+    
+    // 'cover' uses the LARGER of the two scales to ensure the area is filled
+    const currentZoomFactor = Math.max(scaleWidth, scaleHeight);
+
+    // 3. Calculate the actual width of the image (including the cropped parts)
+    const renderedWidthPx = naturalWidth * currentZoomFactor;
+
+    // 4. Calculate Pixel Scale (1px = X meters)
+    const metersPerPixel = realWorldMeters / naturalWidth; // Base resolution
+    const currentMetersPerPixel = realWorldMeters / renderedWidthPx;
+
+    console.log(`Current Pixel Scale: 1px = ${currentMetersPerPixel.toFixed(2)} meters`);
+    return currentMetersPerPixel;
+}
+
+// resizes comparison shapes and scalebar according to window pixel scale
+function resizeElements() {
+  scale = getPixelScale();
+  const SC_shapes = document.querySelectorAll('.SC_shape');
+  const scalebar_bars = document.getElementById('scalebar_bars');
+  const scalebar_labels = document.getElementById('scalebar_labels');
+
+  scalebar_bars.style.width = `${sizes_dict['scalebar']/scale}px`;
+  scalebar_labels.style.width = `${sizes_dict['scalebar']/scale+100}px`;
+
+  SC_shapes.forEach((shape) => {
+    let shape_name = shape.id.split('_')[0];
+    shape.style.width = `${sizes_dict[shape_name]/scale}px`;
+  })
+}
+
 document.addEventListener('DOMContentLoaded', () => {updateImages()});
+let scale;
+document.addEventListener('DOMContentLoaded', () => {
+  scale = getPixelScale();
+  resizeElements();
+});
+window.addEventListener('resize', () => {resizeElements()});
 
 // #region COMPARISON HANDLE
 let isDragging = false;
+let isDragging_SC = null;
 
 // 1. When the user clicks down, start dragging
 container.addEventListener('mousedown', () => {
@@ -109,33 +181,44 @@ container.addEventListener('mousedown', () => {
 
 // 2. When the user releases the click, stop dragging
 window.addEventListener('mouseup', () => {
-  isDragging = false;
+  isDragging = false; // for the comparison handle
+  isDragging_SC = null; // for the size comparison shapes
 });
 
 // 3. Track the mouse movement
 window.addEventListener('mousemove', (e) => {
-  if (!isDragging) {
+  // if neither the comparison handle or a size comparison shape is being dragged
+  if (!isDragging && !isDragging_SC) {
     container.style.cursor = 'auto';
     return;
   };
 
-  // Get the bounding box of the container to handle offsets
-  const rect = container.getBoundingClientRect();
+  // Dragging of the comparison handle
+  if (isDragging) {
+    // Get the bounding box of the container to handle offsets
+    const rect = container.getBoundingClientRect();
+    
+    // Calculate the horizontal position of the mouse relative to the container
+    let x = e.clientX - rect.left;
+
+    // Constrain the 'x' value so the border doesn't go off-screen
+    if (x < 0) x = 0;
+    if (x > rect.width) x = rect.width;
+
+    // Calculate the percentage
+    const percentage = (x / rect.width) * 100;
+
+    // Update the CSS width of the wrapper
+    wrapper_left.style.width = `${percentage}%`;
+    handle.style.left = `${percentage}%`;
+    container.style.cursor = 'col-resize';
   
-  // Calculate the horizontal position of the mouse relative to the container
-  let x = e.clientX - rect.left;
-
-  // Constrain the 'x' value so the border doesn't go off-screen
-  if (x < 0) x = 0;
-  if (x > rect.width) x = rect.width;
-
-  // Calculate the percentage
-  const percentage = (x / rect.width) * 100;
-
-  // Update the CSS width of the wrapper
-  wrapper_left.style.width = `${percentage}%`;
-  handle.style.left = `${percentage}%`;
-  container.style.cursor = 'col-resize';
+  // Dragging of a comparison shape
+  } else if (isDragging_SC) {
+    let SC_shape = document.getElementById(isDragging_SC);
+    SC_shape.style.left = e.clientX + 'px';
+    SC_shape.style.top = e.clientY + 'px';
+  }
 });
 // #endregion
 
@@ -182,9 +265,57 @@ checkboxes_overlayData_right.forEach(checkbox => {
       
 // #endregion
 
-// #region SIZE COMPARISON
+// #region SIZE COMPARISON (SC)
+const SC_buttons = document.querySelectorAll('button[name="SC_buttons"]')
+let SC_shape_count = 0;
 
-/* const checkbox_vienna = document.getElementById("checkbox_vienna") */
+
+SC_buttons.forEach(button => {
+  button.addEventListener('mousedown', (e) => {
+    let SC_button_image = document.getElementById(`SC_button_image_${button.value}`);
+
+    // only left click activates the function
+    if (e.button !== 0) return;
+    SC_shape_count ++;
+
+    // shape creation
+    let SC_shape = document.createElement("img");
+    SC_shape.classList.add("SC_shape");
+    SC_shape.src = `data/${button.value}.png`;
+    SC_shape.id = `${button.value}_${SC_shape_count}`;
+    SC_shape.draggable = false;
+    // the shape gets the same color as the image in the button
+    SC_shape.style.filter = SC_button_image.style.filter
+    SC_shape.style.left = e.clientX + 'px';
+    SC_shape.style.top = e.clientY + 'px';
+
+    SC_shape.style.width = `${sizes_dict[button.value]/scale}px` 
+
+    // make the shape draggeable immediately
+    isDragging_SC = SC_shape.id;
+
+    document.body.appendChild(SC_shape);
+    console.log(`Added a shape. Now there are ${SC_shape_count}`);
+
+    // changes the color of the image in the button randomly (between 20 and 340)
+    let deg = Math.floor(Math.random() * 340 + 20)
+    SC_button_image.style.filter = `hue-rotate(${deg}deg)`
+
+    // right click removes the shape
+    SC_shape.addEventListener('contextmenu', (e) => {
+      e.preventDefault(); // stop browser context menu
+      SC_shape.remove();
+      SC_shape_count --;
+      console.log(`Removed a shape. Now there are ${SC_shape_count}`);
+    });
+
+    // for dragging
+    SC_shape.addEventListener('mousedown', (e) => {
+      // only left click activates the function
+      if (e.button !== 0) return;
+      isDragging_SC = SC_shape.id;
+    })
+  })})
 
 
 
@@ -195,7 +326,7 @@ checkboxes_overlayData_right.forEach(checkbox => {
   console.log(`Scale Factor: 1px = ${scale_factor}`)
 
   let new_sizeImage = document.createElement("img");
-  new_sizeImage.classList.add("sizeComparison_image");
+  new_sizeImage.classList.add("SC_image");
   new_sizeImage.id = "Vienna";
   new_sizeImage.src = "data/vienna.png";
   new_sizeImage.width = "113px"
