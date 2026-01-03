@@ -5,12 +5,15 @@ const wrapper_left = document.getElementById("wrapper_left");
 const container = document.getElementById("comparison-container");
 const burnt_area = document.getElementById("burnt_area_text");
 
+// real world width of the elements in meters (changed so it fits the size_text.png image, not a clean solution :/). elisoidal measurents are used. EPSG:3857
 const sizes_dict = {
-  'vienna': 34000,
+  'sat' : 168861, /* 168861 */
+  'vienna': 34000, 
   'liechtenstein': 13000,
-  'neusiedlerSee': 14500,
-  'athen': 10500,
-  'scalebar': 30000
+  'attersee': 9500,
+  'athen': 10500, 
+  'scalebar': 30000 
+  /* 'neusiedlerSee': 14500 */
 }
 
 function updateImages() {
@@ -46,7 +49,9 @@ function updateImages() {
   }
 
   updateOverlay()
-  /* image1.src = 'data/size_test.png' */ // for testing
+  // for testing
+/*   image1.src = 'data/size_test.png';
+  image2.src = 'data/size_test.png'; */
 };
 
 function updateOverlay() {
@@ -117,9 +122,7 @@ function checkEqual() {
 }
 
 // get map scale in 1 px : x meters. Based on the satellite images in full resolution (2500px : 168 861m)
-function getPixelScale() {
-    const realWorldMeters = 168861;
-    
+function getPixelScale() {  
     // 1. Get dimensions
     const containerWidth = image2.clientWidth;
     const containerHeight = image2.clientHeight;
@@ -137,8 +140,8 @@ function getPixelScale() {
     const renderedWidthPx = naturalWidth * currentZoomFactor;
 
     // 4. Calculate Pixel Scale (1px = X meters)
-    const metersPerPixel = realWorldMeters / naturalWidth; // Base resolution
-    const currentMetersPerPixel = realWorldMeters / renderedWidthPx;
+    const metersPerPixel = sizes_dict['sat'] / naturalWidth; // Base resolution
+    const currentMetersPerPixel = sizes_dict['sat'] / renderedWidthPx;
 
     console.log(`Current Pixel Scale: 1px = ${currentMetersPerPixel.toFixed(2)} meters`);
     return currentMetersPerPixel;
@@ -253,7 +256,7 @@ radio_Imagemode.forEach(radio => {
 
 // #endregion
 
-// #region OVERLAY IMAGES
+// #region OVERLAY DATA
 
 const checkboxes_overlayData_left = document.querySelectorAll('input[name="overlay_data_left"]');
 checkboxes_overlayData_left.forEach(checkbox => {
