@@ -401,7 +401,22 @@ SC_buttons.forEach(button => {
       // Prevent the screen from scrolling or zooming while moving the shape
      if (e.cancelable) e.preventDefault();
     }, { passive: false });
-  })})
+
+    // double tap to remove shape for mobile
+    let lastTap = 0;
+    SC_shape.addEventListener('touchstart', (e) => {
+      const currentTime = new Date().getTime();
+      const tapLength = currentTime - lastTap;
+  
+      // If the gap between taps is less than 300ms, treat it as a double tap
+      if (tapLength < 300 && tapLength > 0) {
+        SC_shape.remove();
+        e.preventDefault(); // Prevents the drag logic from triggering
+      }
+  
+    lastTap = currentTime;
+  });
+})})
 
 // #endregion
 
