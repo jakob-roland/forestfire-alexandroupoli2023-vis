@@ -387,6 +387,12 @@ SC_buttons.forEach(button => {
       SC_shape_count --;
     });
 
+    // double click removes the shape
+    SC_shape.addEventListener('dblclick', (e) => {
+      SC_shape.remove();
+      SC_shape_count --;
+    });
+
     // for dragging
     SC_shape.addEventListener('mousedown', (e) => {
       // only left click activates the function
@@ -411,6 +417,7 @@ SC_buttons.forEach(button => {
       // If the gap between taps is less than 300ms, treat it as a double tap
       if (tapLength < 300 && tapLength > 0) {
         SC_shape.remove();
+        SC_shape_count --;
         e.preventDefault(); // Prevents the drag logic from triggering
       }
   
